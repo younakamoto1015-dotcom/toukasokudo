@@ -34,52 +34,89 @@
             color: #333;
         }
 
-        /* トップコントロール */
+        /* トップコントロール (1行で収まるように調整) */
         .top-bar { 
-            display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px;
-            background: #fff; padding: 10px 15px; border-radius: 8px; 
+            display: flex; flex-wrap: nowrap; align-items: center; justify-content: space-between; gap: 8px;
+            background: #fff; padding: 8px 12px; border-radius: 8px; 
             box-shadow: 0 2px 5px rgba(0,0,0,0.05); 
             flex-shrink: 0; margin-bottom: 10px;
+            overflow-x: auto; /* 画面幅が足りない場合は横スクロール可能に */
         }
-        .controls-left { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+        .controls-left { display: flex; flex-wrap: nowrap; gap: 8px; align-items: center; }
         select { padding: 4px 8px; border-radius: 4px; border: 1px solid #ccc; font-size: 0.95rem; }
         
         /* パラメータ入力欄 */
-        .ball-settings { display: flex; align-items: center; gap: 6px; padding: 4px 8px; border-radius: 6px; font-size: 0.9rem; }
+        .ball-settings { display: flex; align-items: center; gap: 6px; padding: 4px 8px; border-radius: 6px; font-size: 1rem; flex-wrap: nowrap; }
         .panel-a { background: rgba(0, 0, 0, 0.05); border: 1px solid rgba(0, 0, 0, 0.3); }
         .panel-b { background: rgba(0, 122, 255, 0.08); border: 1px solid rgba(0, 122, 255, 0.3); }
-        .ball-label { font-weight: bold; margin-right: 2px; }
-        .ball-settings label { display: flex; align-items: center; gap: 2px; }
-        .ball-settings input[type="number"] { width: 50px; text-align: right; padding: 2px 4px; border: 1px solid #ccc; border-radius: 4px; }
+        .ball-label { font-weight: bold; margin-right: 2px; white-space: nowrap; }
+        .ja-label { font-size: 0.85rem; color: #555; margin-right: 2px; white-space: nowrap; }
+        .ball-settings label { display: flex; align-items: center; gap: 2px; font-weight: bold; white-space: nowrap; }
+        .ball-settings input[type="number"] { 
+            width: 65px; 
+            text-align: right; 
+            padding: 2px 4px; 
+            border: 1px solid #ccc; 
+            border-radius: 4px; 
+            font-size: 1.2rem;
+            font-family: monospace;
+            font-weight: bold;
+        }
+        .ball-settings input:disabled { background-color: #eee; color: #777; }
+        
+        .g-btn {
+            padding: 2px 6px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            background: #e9ecef;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-left: 2px;
+            color: #333;
+        }
+        .g-btn:hover { background: #d3d9df; }
+        .g-btn:disabled { background: #eee; color: #aaa; cursor: not-allowed; }
+        
+        input[type="number"]::-webkit-outer-spin-button,
+        input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type="number"] {
+            -moz-appearance: textfield; 
+        }
 
-        button { padding: 6px 16px; border: none; border-radius: 4px; font-weight: bold; font-size: 0.95rem; cursor: pointer; transition: background 0.2s; }
+        button { padding: 6px 16px; border: none; border-radius: 4px; font-weight: bold; font-size: 0.95rem; cursor: pointer; transition: background 0.2s; white-space: nowrap; }
         .btn-start { background: var(--primary); color: #fff; }
         .btn-start:hover { background: #0056b3; }
         .btn-reset { background: #6c757d; color: #fff; }
         .btn-reset:hover { background: #5a6268; }
-        .timer-display { font-size: 1.3rem; font-family: monospace; font-weight: bold; background: #e9ecef; padding: 4px 12px; border-radius: 4px; }
+        .timer-display { font-size: 1.3rem; font-family: monospace; font-weight: bold; background: #e9ecef; padding: 4px 12px; border-radius: 4px; white-space: nowrap; margin-left: auto; }
 
-        /* メインレイアウト (Gridで完全制御) */
+        /* メインレイアウト */
         .main-area { 
             display: grid; 
             gap: 15px; 
             padding-bottom: 20px;
         }
         
+        /* 水平レイアウト (Canvasの縦幅を少し小さく: 200px) */
         .layout-horizontal { 
             grid-template-columns: repeat(3, 1fr);
-            grid-template-rows: 300px auto; 
+            grid-template-rows: 200px auto; 
         }
         .layout-horizontal .canvas-section { grid-column: 1 / span 3; grid-row: 1; }
         .layout-horizontal .box-x { grid-column: 1; grid-row: 2; }
         .layout-horizontal .box-v { grid-column: 2; grid-row: 2; }
         .layout-horizontal .box-a { grid-column: 3; grid-row: 2; }
         
+        /* 鉛直レイアウト */
         .layout-vertical { 
-            grid-template-columns: 350px 1fr 1fr 1fr 1fr; 
+            grid-template-columns: 300px 1fr 1fr 1fr 1fr; 
             grid-template-rows: auto auto; 
         }
-        .layout-vertical .canvas-section { grid-column: 1; grid-row: 1 / span 2; min-height: 600px; }
+        .layout-vertical .canvas-section { grid-column: 1; grid-row: 1 / span 2; min-height: 500px; }
         .layout-vertical .box-x { grid-column: 2 / span 2; grid-row: 1; } 
         .layout-vertical .box-v { grid-column: 4 / span 2; grid-row: 1; } 
         .layout-vertical .box-a { grid-column: 3 / span 2; grid-row: 2; } 
@@ -105,12 +142,35 @@
             height: 100%; 
         }
         
+        /* グラフボックスのスタイリング */
         .chart-box { 
             background: #fff; border-radius: 8px; padding: 10px; 
             box-shadow: 0 1px 4px rgba(0,0,0,0.1); 
             display: flex; flex-direction: column; min-height: 0; min-width: 0;
             aspect-ratio: 1 / 1; 
             width: 100%;
+        }
+
+        .chart-title {
+            text-align: center;
+            font-size: 1.1rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #333;
+            position: relative; /* 表示切替チェックボックス用 */
+        }
+
+        .toggle-graph {
+            position: absolute;
+            right: 0;
+            top: 0;
+            font-size: 0.85rem;
+            font-weight: normal;
+            cursor: pointer;
+            color: #555;
+            display: flex;
+            align-items: center;
+            gap: 4px;
         }
         
         .chart-wrapper {
@@ -141,24 +201,29 @@
             </select>
 
             <div class="ball-settings panel-a">
-                <span class="ball-label" style="color:#111111;">A(黒)</span>
-                <label>x₀=<input type="number" id="inpX0A" value="0" step="1" oninput="onInputChange()"></label>
-                <label>v₀=<input type="number" id="inpV0A" value="5" step="1" oninput="onInputChange()"></label>
-                <label>a=<input type="number" id="inpAA" value="0" step="0.1" oninput="onInputChange()"></label>
+                <span class="ball-label" style="color:#111111;">小球A(黒)</span>
+                <label><span class="ja-label">初期位置</span><span id="labelX0A">x₀</span>=<input type="number" id="inpX0A" value="0" step="1" oninput="onInputChange()" onfocus="this.select()"></label>
+                <label><span class="ja-label">初速度</span>v₀=<input type="number" id="inpV0A" value="5" step="1" oninput="onInputChange()" onfocus="this.select()"></label>
+                <label><span class="ja-label">加速度</span>a=<input type="number" id="inpAA" value="0" step="0.1" oninput="onInputChange()" onfocus="this.select()">
+                    <button class="g-btn" type="button" id="btnGA" onclick="setGravity('A')" style="display:none;" title="重力加速度をセット">重力</button>
+                </label>
             </div>
             
             <div class="ball-settings panel-b">
                 <label class="ball-label" style="color:#007aff; cursor:pointer;">
-                    <input type="checkbox" id="enableBallB" onchange="onInputChange()"> B(青)
+                    <input type="checkbox" id="enableBallB" onchange="onInputChange()"> 小球B(青)
                 </label>
-                <label>x₀=<input type="number" id="inpX0B" value="0" step="1" oninput="onInputChange()"></label>
-                <label>v₀=<input type="number" id="inpV0B" value="5" step="1" oninput="onInputChange()"></label>
-                <label>a=<input type="number" id="inpAB" value="0" step="0.1" oninput="onInputChange()"></label>
+                <label><span class="ja-label">初期位置</span><span id="labelX0B">x₀</span>=<input type="number" id="inpX0B" value="0" step="1" oninput="onInputChange()" onfocus="this.select()"></label>
+                <label><span class="ja-label">初速度</span>v₀=<input type="number" id="inpV0B" value="5" step="1" oninput="onInputChange()" onfocus="this.select()"></label>
+                <label><span class="ja-label">加速度</span>a=<input type="number" id="inpAB" value="0" step="0.1" oninput="onInputChange()" onfocus="this.select()">
+                    <button class="g-btn" type="button" id="btnGB" onclick="setGravity('B')" style="display:none;" title="重力加速度をセット">重力</button>
+                </label>
             </div>
 
             <button class="btn-start" id="startBtn" onclick="toggleSim()">スタート</button>
             <button class="btn-reset" onclick="resetSim()">リセット</button>
         </div>
+
         <div class="timer-display">t = <span id="timeVal">0.00</span> s</div>
     </div>
 
@@ -167,9 +232,27 @@
             <canvas id="simCanvas"></canvas>
         </div>
         
-        <div class="chart-box box-x"><div class="chart-wrapper"><canvas id="chartX"></canvas></div></div>
-        <div class="chart-box box-v"><div class="chart-wrapper"><canvas id="chartV"></canvas></div></div>
-        <div class="chart-box box-a"><div class="chart-wrapper"><canvas id="chartA"></canvas></div></div>
+        <div class="chart-box box-x">
+            <div class="chart-title">
+                <span id="titleChartX">x-t グラフ (変位)</span>
+                <label class="toggle-graph"><input type="checkbox" id="chkShowX" checked onchange="updateGraphVisibility()">表示</label>
+            </div>
+            <div class="chart-wrapper"><canvas id="chartX"></canvas></div>
+        </div>
+        <div class="chart-box box-v">
+            <div class="chart-title">
+                v-t グラフ (速度)
+                <label class="toggle-graph"><input type="checkbox" id="chkShowV" onchange="updateGraphVisibility()">表示</label>
+            </div>
+            <div class="chart-wrapper"><canvas id="chartV"></canvas></div>
+        </div>
+        <div class="chart-box box-a">
+            <div class="chart-title">
+                a-t グラフ (加速度)
+                <label class="toggle-graph"><input type="checkbox" id="chkShowA" onchange="updateGraphVisibility()">表示</label>
+            </div>
+            <div class="chart-wrapper"><canvas id="chartA"></canvas></div>
+        </div>
     </div>
 </div>
 
@@ -209,8 +292,8 @@
     };
 
     let balls = {
-        A: { color: COLOR_BALL_A, name: '小球A (黒)', ...modeSettings.horizontal.A },
-        B: { color: COLOR_BALL_B, name: '小球B (青)', ...modeSettings.horizontal.B }
+        A: { color: COLOR_BALL_A, name: '小球A (黒)', ...modeSettings.horizontal.A, history: [] },
+        B: { color: COLOR_BALL_B, name: '小球B (青)', ...modeSettings.horizontal.B, history: [] }
     };
 
     let chartData = { time: [], Ax:[], Av:[], Aa:[], Bx:[], Bv:[], Ba:[] };
@@ -219,15 +302,42 @@
     const canvas = document.getElementById('simCanvas');
     const ctx = canvas.getContext('2d');
 
-    // --- 有効数字2桁の文字列表現を取得するヘルパー関数 ---
+    // --- ユーティリティ ---
     function toSigFig2Str(num) {
         if (Math.abs(num) < 1e-6) return "0.0";
         let str = Number(num).toPrecision(2);
-        // 指数表記(e)が含まれる場合は通常の数値に戻して文字列化
-        if (str.includes('e')) {
-            return Number(str).toString(); 
-        }
+        if (str.includes('e')) return Number(str).toString(); 
         return str;
+    }
+
+    function setChartsInteractive(interactive) {
+        document.querySelectorAll('.chart-wrapper').forEach(el => {
+            el.style.pointerEvents = interactive ? 'auto' : 'none';
+        });
+    }
+
+    // 方向によって x と y の表記を切り替える
+    function updateLabelsForDirection() {
+        const isHoriz = currentMode === 'horizontal';
+        const posName = isHoriz ? 'x' : 'y';
+        
+        document.getElementById('labelX0A').innerText = posName + '₀';
+        document.getElementById('labelX0B').innerText = posName + '₀';
+        document.getElementById('titleChartX').innerText = posName + '-t グラフ (変位)';
+
+        // 鉛直方向のときだけ重力ボタンを表示
+        document.getElementById('btnGA').style.display = isHoriz ? 'none' : 'inline-block';
+        document.getElementById('btnGB').style.display = isHoriz ? 'none' : 'inline-block';
+    }
+
+    // 重力加速度をセットする関数
+    function setGravity(ballKey) {
+        if (isRunning) return; 
+        let g = 9.8;
+        if (currentMode === 'vertical_up') g = -9.8;
+        
+        document.getElementById('inpA' + ballKey).value = g;
+        onInputChange();
     }
 
     // --- 初期化処理 ---
@@ -237,7 +347,26 @@
         initCharts();
         
         updateUIFromState();
+        updateLabelsForDirection();
+        initHistory();
+        updateGraphVisibility();
         updateAll();
+    }
+
+    function initHistory() {
+        balls.A.history = [{ t_start: 0, x0: balls.A.x0, v0: balls.A.v0, a: balls.A.a }];
+        balls.B.history = [{ t_start: 0, x0: balls.B.x0, v0: balls.B.v0, a: balls.B.a }];
+    }
+
+    function updateGraphVisibility() {
+        const showX = document.getElementById('chkShowX').checked;
+        const showV = document.getElementById('chkShowV').checked;
+        const showA = document.getElementById('chkShowA').checked;
+
+        // chart-box 全体を消すのではなく、中の canvas のラッパーの visibility を変更して枠を残す
+        document.querySelector('.box-x .chart-wrapper').style.visibility = showX ? 'visible' : 'hidden';
+        document.querySelector('.box-v .chart-wrapper').style.visibility = showV ? 'visible' : 'hidden';
+        document.querySelector('.box-a .chart-wrapper').style.visibility = showA ? 'visible' : 'hidden';
     }
 
     function updateUIFromState() {
@@ -270,6 +399,9 @@
         }
         
         updateUIFromState();
+        updateLabelsForDirection();
+        
+        resetSim();
         
         setTimeout(() => {
             updateAll();
@@ -277,28 +409,75 @@
         }, 50); 
     }
 
-    function onInputChange() {
-        balls.A.x0 = parseFloat(document.getElementById('inpX0A').value) || 0;
-        balls.A.v0 = parseFloat(document.getElementById('inpV0A').value) || 0;
-        balls.A.a  = parseFloat(document.getElementById('inpAA').value) || 0;
+    function checkAndPushHistory(ball, newAStr, ballKey) {
+        let newA = parseFloat(newAStr) || 0;
+        let lastH = ball.history[ball.history.length - 1];
         
-        balls.B.enabled = document.getElementById('enableBallB').checked;
-        balls.B.x0 = parseFloat(document.getElementById('inpX0B').value) || 0;
-        balls.B.v0 = parseFloat(document.getElementById('inpV0B').value) || 0;
-        balls.B.a  = parseFloat(document.getElementById('inpAB').value) || 0;
+        if (lastH.t_start === time) {
+            lastH.a = newA;
+            ball.a = newA;
+        } else if (newA !== lastH.a) {
+            let p = calcPhysics(ball, time); 
+            ball.history.push({
+                t_start: time,
+                x0: p.x,
+                v0: p.v,
+                a: newA
+            });
+            ball.a = newA;
+        }
 
-        modeSettings[currentMode].A = { enabled: balls.A.enabled, x0: balls.A.x0, v0: balls.A.v0, a: balls.A.a };
-        modeSettings[currentMode].B = { enabled: balls.B.enabled, x0: balls.B.x0, v0: balls.B.v0, a: balls.B.a };
+        if (chartData.time.length > 0) {
+            let lastIdx = chartData.time.length - 1;
+            if (chartData.time[lastIdx] === time) {
+                chartData[ballKey + 'a'][lastIdx].y = newA;
+            }
+        }
+    }
 
-        updateAll();
+    function onInputChange() {
+        let x0A = parseFloat(document.getElementById('inpX0A').value) || 0;
+        let v0A = parseFloat(document.getElementById('inpV0A').value) || 0;
+        let aA  = parseFloat(document.getElementById('inpAA').value) || 0;
+        
+        let enB = document.getElementById('enableBallB').checked;
+        let x0B = parseFloat(document.getElementById('inpX0B').value) || 0;
+        let v0B = parseFloat(document.getElementById('inpV0B').value) || 0;
+        let aB  = parseFloat(document.getElementById('inpAB').value) || 0;
+
+        if (time === 0) {
+            balls.A.x0 = x0A; balls.A.v0 = v0A; balls.A.a = aA;
+            balls.B.enabled = enB; balls.B.x0 = x0B; balls.B.v0 = v0B; balls.B.a = aB;
+
+            modeSettings[currentMode].A = { enabled: balls.A.enabled, x0: balls.A.x0, v0: balls.A.v0, a: balls.A.a };
+            modeSettings[currentMode].B = { enabled: balls.B.enabled, x0: balls.B.x0, v0: balls.B.v0, a: balls.B.a };
+            initHistory();
+            updateAll();
+        } else if (!isRunning) {
+            checkAndPushHistory(balls.A, aA, 'A');
+            checkAndPushHistory(balls.B, aB, 'B');
+            updateAll();
+            renderCharts();
+        }
     }
 
     // --- 物理計算とスケール・原点調整 ---
     function calcPhysics(ball, t) {
+        if (!ball.history || ball.history.length === 0) {
+            return { x: ball.x0 + ball.v0*t + 0.5*ball.a*t*t, v: ball.v0 + ball.a*t, a: ball.a };
+        }
+        let h = ball.history[0];
+        for (let i = ball.history.length - 1; i >= 0; i--) {
+            if (t >= ball.history[i].t_start) {
+                h = ball.history[i];
+                break;
+            }
+        }
+        let dt = t - h.t_start;
         return {
-            x: ball.x0 + ball.v0 * t + 0.5 * ball.a * t * t,
-            v: ball.v0 + ball.a * t,
-            a: ball.a
+            x: h.x0 + h.v0 * dt + 0.5 * h.a * dt * dt,
+            v: h.v0 + h.a * dt,
+            a: h.a
         };
     }
 
@@ -312,20 +491,36 @@
             if (!ball.enabled) return;
             activeBallsCount++;
             
-            let tPeak = ball.a !== 0 ? -ball.v0 / ball.a : -1;
             let times = [0, MAX_TIME];
-            if (tPeak > 0 && tPeak < MAX_TIME) times.push(tPeak);
+            
+            if (ball.history) {
+                ball.history.forEach(h => {
+                    times.push(h.t_start);
+                    if (h.a !== 0) {
+                        let tPeak = h.t_start - h.v0 / h.a;
+                        let hIdx = ball.history.indexOf(h);
+                        let nextT = (hIdx < ball.history.length - 1) ? ball.history[hIdx + 1].t_start : MAX_TIME;
+                        if (tPeak > h.t_start && tPeak < nextT) {
+                            times.push(tPeak);
+                        }
+                    }
+                });
+            }
 
             let first = true;
             times.forEach(t => {
                 let p = calcPhysics(ball, t);
-                if(first && activeBallsCount === 1) { minX = maxX = p.x; first = false; }
-                else { minX = Math.min(minX, p.x); maxX = Math.max(maxX, p.x); }
+                if(first && activeBallsCount === 1) { 
+                    minX = maxX = p.x; 
+                    minV = maxV = p.v;
+                    minA = maxA = p.a;
+                    first = false; 
+                } else { 
+                    minX = Math.min(minX, p.x); maxX = Math.max(maxX, p.x); 
+                    minV = Math.min(minV, p.v); maxV = Math.max(maxV, p.v);
+                    minA = Math.min(minA, p.a); maxA = Math.max(maxA, p.a);
+                }
             });
-            
-            let p0 = calcPhysics(ball, 0), p5 = calcPhysics(ball, MAX_TIME);
-            minV = Math.min(minV, p0.v, p5.v); maxV = Math.max(maxV, p0.v, p5.v);
-            minA = Math.min(minA, ball.a); maxA = Math.max(maxA, ball.a);
         };
 
         checkBounds(balls.A);
@@ -347,7 +542,7 @@
             originOffset = padding - minX * drawScale;
         } else if (currentMode === 'vertical_down') {
             originOffset = padding - minX * drawScale;
-        } else { // vertical_up
+        } else { 
             originOffset = padding + maxX * drawScale;
         }
 
@@ -362,7 +557,7 @@
             return { x: originOffset + val * drawScale, y: cy + offset };
         } else if (currentMode === 'vertical_down') {
             return { x: cx + offset, y: originOffset + val * drawScale };
-        } else { // vertical_up
+        } else { 
             return { x: cx + offset, y: originOffset - val * drawScale };
         }
     }
@@ -403,6 +598,7 @@
         const cy = canvas.height / 2;
         const isHoriz = currentMode === 'horizontal';
         const canvasDim = isHoriz ? canvas.width : canvas.height;
+        const posName = isHoriz ? 'x' : 'y';
         
         const tickVal = calcTickInterval();
         const bounds = calcBoundsAndScale(); 
@@ -463,12 +659,12 @@
             ctx.beginPath(); ctx.moveTo(cx, 0); ctx.lineTo(cx, canvas.height); ctx.stroke();
             let arrowY = canvas.height - 20; 
             ctx.beginPath(); ctx.moveTo(cx, arrowY); ctx.lineTo(cx - 6, arrowY - 12); ctx.lineTo(cx + 6, arrowY - 12); ctx.fill();
-            ctx.textAlign = 'left'; ctx.font = 'bold 16px sans-serif'; ctx.fillText('+y (正)', cx + 15, arrowY - 15);
+            ctx.textAlign = 'right'; ctx.font = 'bold 16px sans-serif'; ctx.fillText('+y (正)', cx - 15, arrowY - 15);
         } else { // vertical_up
             ctx.beginPath(); ctx.moveTo(cx, 0); ctx.lineTo(cx, canvas.height); ctx.stroke();
             let arrowY = 20; 
             ctx.beginPath(); ctx.moveTo(cx, arrowY); ctx.lineTo(cx - 6, arrowY + 12); ctx.lineTo(cx + 6, arrowY + 12); ctx.fill();
-            ctx.textAlign = 'left'; ctx.font = 'bold 16px sans-serif'; ctx.fillText('+y (正)', cx + 15, arrowY + 15);
+            ctx.textAlign = 'right'; ctx.font = 'bold 16px sans-serif'; ctx.fillText('+y (正)', cx - 15, arrowY + 15);
         }
 
         // 3. 小球と各種パラメータの描画
@@ -477,7 +673,6 @@
             const p = calcPhysics(ball, t);
             const pos = getScreenPos(p.x, offset);
             
-            // 小球本体
             ctx.beginPath();
             ctx.arc(pos.x, pos.y, 16, 0, Math.PI*2);
             ctx.fillStyle = ball.color;
@@ -490,8 +685,7 @@
 
             let isPrimary = offset <= 0; 
             let textX, textY_x, textY_v, textY_a, textAlignStr;
-
-            const lineHeight = 18; // 行間を詰める
+            const lineHeight = 18; 
 
             if (isHoriz) {
                 textX = pos.x; 
@@ -520,8 +714,7 @@
             
             ctx.textAlign = textAlignStr;
             
-            // x, v, a を各グラフのテーマカラーで隙間なく描画
-            drawTextWithOutline(`x=${toSigFig2Str(p.x)} [m]`, textX, textY_x, COLOR_X);
+            drawTextWithOutline(`${posName}=${toSigFig2Str(p.x)} [m]`, textX, textY_x, COLOR_X);
             drawTextWithOutline(`v=${toSigFig2Str(p.v)} [m/s]`, textX, textY_v, COLOR_V);
             drawTextWithOutline(`a=${toSigFig2Str(p.a)} [m/s²]`, textX, textY_a, COLOR_A);
         };
@@ -529,6 +722,29 @@
         let offsetA = isHoriz ? -35 : -35;
         let offsetB = isHoriz ? 35 : 35;
         if (!balls.B.enabled) offsetA = 0; 
+
+        const drawTrail = (ballKey, ball, offset) => {
+            if (!ball.enabled) return;
+            const trailData = chartData[ballKey + 'x'];
+            if (!trailData) return;
+            
+            ctx.save();
+            ctx.fillStyle = ball.color;
+            ctx.globalAlpha = 0.4;
+            
+            for (let i = 0; i < trailData.length; i++) {
+                if (i % 2 !== 0) continue;
+                const pX = trailData[i].y;
+                const pos = getScreenPos(pX, offset);
+                ctx.beginPath();
+                ctx.arc(pos.x, pos.y, 6, 0, Math.PI * 2); 
+                ctx.fill();
+            }
+            ctx.restore();
+        };
+
+        drawTrail('A', balls.A, offsetA);
+        drawTrail('B', balls.B, offsetB);
 
         drawObj(balls.A, offsetA);
         drawObj(balls.B, offsetB);
@@ -539,7 +755,7 @@
         Chart.defaults.font.family = "'Helvetica Neue', 'Helvetica', 'Arial', sans-serif";
         Chart.defaults.animation = false;
 
-        const config = (title, yLabel) => ({
+        const config = (yLabel) => ({
             type: 'line',
             data: { labels: chartData.time, datasets: [] },
             options: {
@@ -547,9 +763,9 @@
                 interaction: { mode: 'index', intersect: false },
                 plugins: { 
                     legend: { display: false }, 
-                    title: { display: true, text: title, font: {size: 14}, padding: {top: 2, bottom: 2} },
+                    title: { display: false }, // Chart.jsのタイトル機能は使わずHTMLで表示
                     tooltip: {
-                        titleFont: { size: 22 }, // ツールチップの文字サイズを倍くらいに
+                        titleFont: { size: 22 }, 
                         bodyFont: { size: 22 },
                         padding: 10,
                         filter: function(context) {
@@ -562,7 +778,7 @@
                             },
                             label: function(context) {
                                 let labelName = context.dataset.label || '';
-                                labelName = labelName.split(' ')[0]; // "小球A (黒)" から "小球A" を抽出
+                                labelName = labelName.split(' ')[0]; 
                                 
                                 const yTitle = context.chart.options.scales.y.title.text;
                                 let unit = '';
@@ -579,26 +795,49 @@
                     x: { type: 'linear', min: 0, max: MAX_TIME, title: { display: true, text: 't [s]' } },
                     y: { title: { display: true, text: yLabel } },
                 },
-                elements: { line: { tension: 0.1, borderWidth: 2 }, point: { radius: 0, hitRadius: 15 } } // ヒットエリアも広げる
+                elements: { line: { tension: 0.1, borderWidth: 2 }, point: { radius: 0, hitRadius: 15 } } 
             }
         });
 
-        chartInstances.X = new Chart(document.getElementById('chartX'), config('x-t グラフ (変位)', '変位 [m]'));
-        chartInstances.V = new Chart(document.getElementById('chartV'), config('v-t グラフ (速度)', '速度 [m/s]'));
-        chartInstances.A = new Chart(document.getElementById('chartA'), config('a-t グラフ (加速度)', '加速度 [m/s²]'));
+        chartInstances.X = new Chart(document.getElementById('chartX'), config('変位 [m]'));
+        chartInstances.V = new Chart(document.getElementById('chartV'), config('速度 [m/s]'));
+        chartInstances.A = new Chart(document.getElementById('chartA'), config('加速度 [m/s²]'));
     }
 
     function updateChartBounds(bounds) {
+        const getActualBounds = (prop) => {
+            let min = bounds[prop][0];
+            let max = bounds[prop][1];
+            let kA = 'A' + prop;
+            let kB = 'B' + prop;
+            
+            if (chartData[kA]) {
+                chartData[kA].forEach(d => {
+                    if (d.y < min) min = d.y;
+                    if (d.y > max) max = d.y;
+                });
+            }
+            if (balls.B.enabled && chartData[kB]) {
+                chartData[kB].forEach(d => {
+                    if (d.y < min) min = d.y;
+                    if (d.y > max) max = d.y;
+                });
+            }
+            return [min, max];
+        };
+
+        const bxData = getActualBounds('x');
+        const bvData = getActualBounds('v');
+        const baData = getActualBounds('a');
+
         const pad = (arr) => {
             let [min, max] = arr;
             
-            // ずっと0の場合は、グラフの中心が0になるように -1 から 1 の範囲にする
             if (Math.abs(min) < 1e-6 && Math.abs(max) < 1e-6) {
                 return { min: -1, max: 1 };
             }
 
             let rng = max - min;
-            // 変化がない（0ではないが一定値）場合はその値を中心にマージンをとる
             if (rng === 0) rng = Math.abs(min) > 0 ? Math.abs(min) : 10;
             
             let pMin = min - rng*0.1;
@@ -613,13 +852,14 @@
 
             return { min: pMin, max: pMax };
         };
-        const bx = pad(bounds.x), bv = pad(bounds.v), ba = pad(bounds.a);
+
+        const bx = pad(bxData), bv = pad(bvData), ba = pad(baData);
 
         chartInstances.X.options.scales.y.min = bx.min; chartInstances.X.options.scales.y.max = bx.max;
         chartInstances.V.options.scales.y.min = bv.min; chartInstances.V.options.scales.y.max = bv.max;
         chartInstances.A.options.scales.y.min = ba.min; chartInstances.A.options.scales.y.max = ba.max;
         
-        Object.values(chartInstances).forEach(c => c.update());
+        Object.values(chartInstances).forEach(c => c.update('none'));
     }
 
     function pushChartData(t) {
@@ -683,6 +923,9 @@
             
             document.getElementById('directionSel').disabled = false;
             document.querySelectorAll('.ball-settings input').forEach(el => el.disabled = false);
+            document.querySelectorAll('.g-btn').forEach(el => el.disabled = false);
+
+            setChartsInteractive(true); 
 
             document.getElementById('timeVal').innerText = time.toFixed(2);
             drawCanvas(time);
@@ -710,6 +953,7 @@
             updateAll();
             for(let key in chartData) chartData[key] = [];
             lastChartPushTime = -0.1;
+            initHistory();
         }
 
         const btn = document.getElementById('startBtn');
@@ -718,14 +962,33 @@
             cancelAnimationFrame(reqAnimFrameId);
             btn.innerText = '再開';
             btn.style.background = '#28a745';
+            
+            if (time !== lastChartPushTime) {
+                pushChartData(time);
+                lastChartPushTime = time;
+                renderCharts();
+            }
+
+            setChartsInteractive(true); 
+
+            // 加速度のみ変更可能にする
+            document.getElementById('inpAA').disabled = false;
+            document.getElementById('inpAB').disabled = false;
+            document.querySelectorAll('.g-btn').forEach(el => el.disabled = false);
         } else {
+            // スタート・再開
             if (time === 0) {
                 updateAll();
                 document.getElementById('directionSel').disabled = true;
-                document.querySelectorAll('.ball-settings input').forEach(el => el.disabled = true);
                 for(let key in chartData) chartData[key] = [];
                 lastChartPushTime = -0.1;
+                initHistory();
             }
+            
+            document.querySelectorAll('.ball-settings input').forEach(el => el.disabled = true);
+            document.querySelectorAll('.g-btn').forEach(el => el.disabled = true);
+            setChartsInteractive(false); 
+            
             isRunning = true;
             lastTimestamp = performance.now();
             reqAnimFrameId = requestAnimationFrame(step);
@@ -748,6 +1011,10 @@
         
         document.getElementById('directionSel').disabled = false;
         document.querySelectorAll('.ball-settings input').forEach(el => el.disabled = false);
+        document.querySelectorAll('.g-btn').forEach(el => el.disabled = false);
+
+        setChartsInteractive(true);
+        initHistory();
 
         for(let key in chartData) chartData[key] = []; 
         renderCharts();
