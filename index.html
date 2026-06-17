@@ -14,7 +14,6 @@
             --color-x: #28a745;
             --color-v: #fd7e14;
             --color-a: #6f42c1;
-            /* 色を変数から定数にして確実に適用する */
         }
         body { 
             font-family: 'Helvetica Neue', Arial, sans-serif; 
@@ -60,7 +59,7 @@
         .btn-reset:hover { background: #5a6268; }
         .timer-display { font-size: 1.3rem; font-family: monospace; font-weight: bold; background: #e9ecef; padding: 4px 12px; border-radius: 4px; }
 
-        /* メインレイアウト */
+        /* メインレイアウト (Gridで完全制御) */
         .main-area { 
             display: grid; 
             gap: 15px; 
@@ -143,18 +142,18 @@
 
             <div class="ball-settings panel-a">
                 <span class="ball-label" style="color:#111111;">A(黒)</span>
-                <label>x₀<input type="number" id="inpX0A" value="0" step="1" oninput="onInputChange()"></label>
-                <label>v₀<input type="number" id="inpV0A" value="5" step="1" oninput="onInputChange()"></label>
-                <label>a<input type="number" id="inpAA" value="0" step="0.1" oninput="onInputChange()"></label>
+                <label>x₀=<input type="number" id="inpX0A" value="0" step="1" oninput="onInputChange()"></label>
+                <label>v₀=<input type="number" id="inpV0A" value="5" step="1" oninput="onInputChange()"></label>
+                <label>a=<input type="number" id="inpAA" value="0" step="0.1" oninput="onInputChange()"></label>
             </div>
             
             <div class="ball-settings panel-b">
                 <label class="ball-label" style="color:#007aff; cursor:pointer;">
                     <input type="checkbox" id="enableBallB" onchange="onInputChange()"> B(青)
                 </label>
-                <label>x₀<input type="number" id="inpX0B" value="0" step="1" oninput="onInputChange()"></label>
-                <label>v₀<input type="number" id="inpV0B" value="-5" step="1" oninput="onInputChange()"></label>
-                <label>a<input type="number" id="inpAB" value="-2" step="0.1" oninput="onInputChange()"></label>
+                <label>x₀=<input type="number" id="inpX0B" value="0" step="1" oninput="onInputChange()"></label>
+                <label>v₀=<input type="number" id="inpV0B" value="5" step="1" oninput="onInputChange()"></label>
+                <label>a=<input type="number" id="inpAB" value="0" step="0.1" oninput="onInputChange()"></label>
             </div>
 
             <button class="btn-start" id="startBtn" onclick="toggleSim()">スタート</button>
@@ -197,15 +196,15 @@
     const modeSettings = {
         horizontal: {
             A: { enabled: true, x0: 0, v0: 5, a: 0 },
-            B: { enabled: false, x0: 0, v0: -5, a: -2 }
+            B: { enabled: false, x0: 0, v0: 5, a: 0 } 
         },
         vertical_down: {
             A: { enabled: true, x0: 0, v0: 0, a: 9.8 },
-            B: { enabled: false, x0: 0, v0: 5, a: 9.8 }
+            B: { enabled: false, x0: 0, v0: 0, a: 9.8 } 
         },
         vertical_up: {
             A: { enabled: true, x0: 0, v0: 10, a: -9.8 },
-            B: { enabled: false, x0: 0, v0: 15, a: -9.8 }
+            B: { enabled: false, x0: 0, v0: 10, a: -9.8 } 
         }
     };
 
@@ -219,6 +218,17 @@
 
     const canvas = document.getElementById('simCanvas');
     const ctx = canvas.getContext('2d');
+
+    // --- 有効数字2桁の文字列表現を取得するヘルパー関数 ---
+    function toSigFig2Str(num) {
+        if (Math.abs(num) < 1e-6) return "0.0";
+        let str = Number(num).toPrecision(2);
+        // 指数表記(e)が含まれる場合は通常の数値に戻して文字列化
+        if (str.includes('e')) {
+            return Number(str).toString(); 
+        }
+        return str;
+    }
 
     // --- 初期化処理 ---
     function init() {
@@ -478,20 +488,21 @@
 
             ctx.font = 'bold 15px sans-serif';
 
-            // 被りを防ぐためにAとBでテキストの配置位置を分ける。さらにx,v,aをグラフの色で隙間なく並べる。
-            let isPrimary = offset <= 0; // Aは上(または左)側、Bは下(または右)側
+            let isPrimary = offset <= 0; 
             let textX, textY_x, textY_v, textY_a, textAlignStr;
+
+            const lineHeight = 18; // 行間を詰める
 
             if (isHoriz) {
                 textX = pos.x; 
                 if (isPrimary) {
-                    textY_x = pos.y - 55;
-                    textY_v = pos.y - 40;
-                    textY_a = pos.y - 25;
+                    textY_a = pos.y - 20;
+                    textY_v = textY_a - lineHeight;
+                    textY_x = textY_v - lineHeight;
                 } else {
-                    textY_x = pos.y + 25;
-                    textY_v = pos.y + 40;
-                    textY_a = pos.y + 55;
+                    textY_x = pos.y + 20;
+                    textY_v = textY_x + lineHeight;
+                    textY_a = textY_v + lineHeight;
                 }
                 textAlignStr = 'center';
             } else {
@@ -502,20 +513,19 @@
                     textX = pos.x + 25; 
                     textAlignStr = 'left';
                 }
-                textY_x = pos.y - 18;
                 textY_v = pos.y;
-                textY_a = pos.y + 18;
+                textY_x = textY_v - lineHeight;
+                textY_a = textY_v + lineHeight;
             }
             
             ctx.textAlign = textAlignStr;
             
-            // x, v, a を各グラフのテーマカラーで描画
-            drawTextWithOutline(`x=${p.x.toFixed(1)} [m]`, textX, textY_x, COLOR_X);
-            drawTextWithOutline(`v=${p.v.toFixed(1)} [m/s]`, textX, textY_v, COLOR_V);
-            drawTextWithOutline(`a=${p.a.toFixed(1)} [m/s²]`, textX, textY_a, COLOR_A);
+            // x, v, a を各グラフのテーマカラーで隙間なく描画
+            drawTextWithOutline(`x=${toSigFig2Str(p.x)} [m]`, textX, textY_x, COLOR_X);
+            drawTextWithOutline(`v=${toSigFig2Str(p.v)} [m/s]`, textX, textY_v, COLOR_V);
+            drawTextWithOutline(`a=${toSigFig2Str(p.a)} [m/s²]`, textX, textY_a, COLOR_A);
         };
 
-        // Bの球はAの球と被らないようにオフセットをつける
         let offsetA = isHoriz ? -35 : -35;
         let offsetB = isHoriz ? 35 : 35;
         if (!balls.B.enabled) offsetA = 0; 
@@ -539,9 +549,29 @@
                     legend: { display: false }, 
                     title: { display: true, text: title, font: {size: 14}, padding: {top: 2, bottom: 2} },
                     tooltip: {
+                        titleFont: { size: 22 }, // ツールチップの文字サイズを倍くらいに
+                        bodyFont: { size: 22 },
+                        padding: 10,
                         filter: function(context) {
                             const t = Math.round(context.parsed.x * 10) / 10;
                             return t % 0.5 === 0;
+                        },
+                        callbacks: {
+                            title: function(context) {
+                                return `t = ${context[0].parsed.x.toFixed(1)} 秒のとき`;
+                            },
+                            label: function(context) {
+                                let labelName = context.dataset.label || '';
+                                labelName = labelName.split(' ')[0]; // "小球A (黒)" から "小球A" を抽出
+                                
+                                const yTitle = context.chart.options.scales.y.title.text;
+                                let unit = '';
+                                if (yTitle.includes('[m/s²]')) unit = 'm/s²';
+                                else if (yTitle.includes('[m/s]')) unit = 'm/s';
+                                else if (yTitle.includes('[m]')) unit = 'm';
+                                
+                                return `${labelName}: ${context.parsed.y.toFixed(2)} ${unit}`;
+                            }
                         }
                     }
                 },
@@ -549,7 +579,7 @@
                     x: { type: 'linear', min: 0, max: MAX_TIME, title: { display: true, text: 't [s]' } },
                     y: { title: { display: true, text: yLabel } },
                 },
-                elements: { line: { tension: 0.1, borderWidth: 2 }, point: { radius: 0, hitRadius: 10 } }
+                elements: { line: { tension: 0.1, borderWidth: 2 }, point: { radius: 0, hitRadius: 15 } } // ヒットエリアも広げる
             }
         });
 
@@ -561,12 +591,19 @@
     function updateChartBounds(bounds) {
         const pad = (arr) => {
             let [min, max] = arr;
+            
+            // ずっと0の場合は、グラフの中心が0になるように -1 から 1 の範囲にする
+            if (Math.abs(min) < 1e-6 && Math.abs(max) < 1e-6) {
+                return { min: -1, max: 1 };
+            }
+
             let rng = max - min;
-            if (rng === 0) rng = 10;
+            // 変化がない（0ではないが一定値）場合はその値を中心にマージンをとる
+            if (rng === 0) rng = Math.abs(min) > 0 ? Math.abs(min) : 10;
+            
             let pMin = min - rng*0.1;
             let pMax = max + rng*0.1;
             
-            // マイナスの値が出ない場合は、一番下(最小値)を必ず0にする
             if (min >= 0) {
                 pMin = 0;
             }
@@ -640,7 +677,6 @@
             time = MAX_TIME;
             isRunning = false;
             
-            // 完了時のUI自動解除とボタンテキストの変更
             const btn = document.getElementById('startBtn');
             btn.innerText = '再スタート';
             btn.style.background = 'var(--primary)';
@@ -669,7 +705,6 @@
     }
 
     function toggleSim() {
-        // 完了後に再スタートする場合の初期化
         if (time >= MAX_TIME) {
             time = 0;
             updateAll();
