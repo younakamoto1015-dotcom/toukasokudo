@@ -10,12 +10,11 @@
             --primary: #007bff;
             --bg: #f4f7f6;
             --text: #333;
-            --ball-A: #111111;
-            --ball-B: #007aff;
             --grid-color: #dee2e6;
             --color-x: #28a745;
             --color-v: #fd7e14;
             --color-a: #6f42c1;
+            /* 色を変数から定数にして確実に適用する */
         }
         body { 
             font-family: 'Helvetica Neue', Arial, sans-serif; 
@@ -61,14 +60,13 @@
         .btn-reset:hover { background: #5a6268; }
         .timer-display { font-size: 1.3rem; font-family: monospace; font-weight: bold; background: #e9ecef; padding: 4px 12px; border-radius: 4px; }
 
-        /* メインレイアウト (Gridで完全制御) */
+        /* メインレイアウト */
         .main-area { 
             display: grid; 
             gap: 15px; 
             padding-bottom: 20px;
         }
         
-        /* 水平レイアウト：Canvas上、グラフ3つ下（1列に3つ） */
         .layout-horizontal { 
             grid-template-columns: repeat(3, 1fr);
             grid-template-rows: 300px auto; 
@@ -78,7 +76,6 @@
         .layout-horizontal .box-v { grid-column: 2; grid-row: 2; }
         .layout-horizontal .box-a { grid-column: 3; grid-row: 2; }
         
-        /* 鉛直レイアウト：Canvas左、グラフは右側に正確な逆ピラミッド型に配置 */
         .layout-vertical { 
             grid-template-columns: 350px 1fr 1fr 1fr 1fr; 
             grid-template-rows: auto auto; 
@@ -109,12 +106,11 @@
             height: 100%; 
         }
         
-        /* グラフボックスのスタイリング */
         .chart-box { 
             background: #fff; border-radius: 8px; padding: 10px; 
             box-shadow: 0 1px 4px rgba(0,0,0,0.1); 
             display: flex; flex-direction: column; min-height: 0; min-width: 0;
-            aspect-ratio: 1 / 1; /* グラフを正方形に */
+            aspect-ratio: 1 / 1; 
             width: 100%;
         }
         
@@ -146,14 +142,14 @@
             </select>
 
             <div class="ball-settings panel-a">
-                <span class="ball-label" style="color:var(--ball-A);">A(黒)</span>
+                <span class="ball-label" style="color:#111111;">A(黒)</span>
                 <label>x₀<input type="number" id="inpX0A" value="0" step="1" oninput="onInputChange()"></label>
                 <label>v₀<input type="number" id="inpV0A" value="5" step="1" oninput="onInputChange()"></label>
                 <label>a<input type="number" id="inpAA" value="0" step="0.1" oninput="onInputChange()"></label>
             </div>
             
             <div class="ball-settings panel-b">
-                <label class="ball-label" style="color:var(--ball-B); cursor:pointer;">
+                <label class="ball-label" style="color:#007aff; cursor:pointer;">
                     <input type="checkbox" id="enableBallB" onchange="onInputChange()"> B(青)
                 </label>
                 <label>x₀<input type="number" id="inpX0B" value="0" step="1" oninput="onInputChange()"></label>
@@ -191,6 +187,13 @@
 
     let currentMode = 'horizontal';
 
+    // 色の定数
+    const COLOR_BALL_A = '#111111';
+    const COLOR_BALL_B = '#007aff';
+    const COLOR_X = '#28a745';
+    const COLOR_V = '#fd7e14';
+    const COLOR_A = '#6f42c1';
+
     const modeSettings = {
         horizontal: {
             A: { enabled: true, x0: 0, v0: 5, a: 0 },
@@ -207,8 +210,8 @@
     };
 
     let balls = {
-        A: { color: 'var(--ball-A)', name: '小球A (黒)', ...modeSettings.horizontal.A },
-        B: { color: 'var(--ball-B)', name: '小球B (青)', ...modeSettings.horizontal.B }
+        A: { color: COLOR_BALL_A, name: '小球A (黒)', ...modeSettings.horizontal.A },
+        B: { color: COLOR_BALL_B, name: '小球B (青)', ...modeSettings.horizontal.B }
     };
 
     let chartData = { time: [], Ax:[], Av:[], Aa:[], Bx:[], Bv:[], Ba:[] };
@@ -396,11 +399,11 @@
         let minVal = Math.floor(bounds.x[0] / tickVal) * tickVal - tickVal;
         let maxVal = Math.ceil(bounds.x[1] / tickVal) * tickVal + tickVal;
 
-        const drawTextWithOutline = (text, x, y) => {
+        const drawTextWithOutline = (text, x, y, color = '#555') => {
             ctx.lineWidth = 3;
             ctx.strokeStyle = 'rgba(255, 255, 255, 0.9)';
             ctx.strokeText(text, x, y);
-            ctx.fillStyle = '#555';
+            ctx.fillStyle = color;
             ctx.fillText(text, x, y);
         };
 
@@ -473,102 +476,48 @@
             ctx.lineWidth = 2;
             ctx.stroke();
 
-            ctx.font = 'bold 16px sans-serif';
+            ctx.font = 'bold 15px sans-serif';
 
-            // 被りを防ぐためにAとBでテキストの配置位置を明確に分ける
-            let isPrimary = offset <= 0; // Aは上(左)側、Bは下(右)側
-            let textX_pos, textY_pos, textX_acc, textY_acc, textAlignStr;
+            // 被りを防ぐためにAとBでテキストの配置位置を分ける。さらにx,v,aをグラフの色で隙間なく並べる。
+            let isPrimary = offset <= 0; // Aは上(または左)側、Bは下(または右)側
+            let textX, textY_x, textY_v, textY_a, textAlignStr;
 
             if (isHoriz) {
-                textX_pos = pos.x; 
-                textX_acc = pos.x;
+                textX = pos.x; 
                 if (isPrimary) {
-                    textY_pos = pos.y - 25; // Aは上
-                    textY_acc = pos.y - 45;
+                    textY_x = pos.y - 55;
+                    textY_v = pos.y - 40;
+                    textY_a = pos.y - 25;
                 } else {
-                    textY_pos = pos.y + 25; // Bは下
-                    textY_acc = pos.y + 45;
+                    textY_x = pos.y + 25;
+                    textY_v = pos.y + 40;
+                    textY_a = pos.y + 55;
                 }
                 textAlignStr = 'center';
             } else {
                 if (isPrimary) {
-                    textX_pos = pos.x - 20; // Aは左
-                    textX_acc = pos.x - 20;
+                    textX = pos.x - 25; 
                     textAlignStr = 'right';
                 } else {
-                    textX_pos = pos.x + 20; // Bは右
-                    textX_acc = pos.x + 20;
+                    textX = pos.x + 25; 
                     textAlignStr = 'left';
                 }
-                textY_pos = pos.y - 15;
-                textY_acc = pos.y + 15;
+                textY_x = pos.y - 18;
+                textY_v = pos.y;
+                textY_a = pos.y + 18;
             }
             
             ctx.textAlign = textAlignStr;
             
-            // x (変位), a (加速度) をそれぞれの小球のカラーで表示
-            ctx.fillStyle = ball.color;
-            ctx.fillText(`x=${p.x.toFixed(1)} [m]`, textX_pos, textY_pos);
-            ctx.fillText(`a=${p.a.toFixed(1)} [m/s²]`, textX_acc, textY_acc);
-
-            // 速度ベクトル（小球と同じ色で表示）
-            if (Math.abs(p.v) > 0.05) {
-                let vLen = Math.max(30, Math.min(Math.abs(p.v) * 6, 80)); 
-                let vx = 0, vy = 0;
-                
-                if (currentMode === 'horizontal') {
-                    vx = Math.sign(p.v) * vLen;
-                } else if (currentMode === 'vertical_down') {
-                    vy = Math.sign(p.v) * vLen; 
-                } else { 
-                    vy = -Math.sign(p.v) * vLen; 
-                }
-                
-                ctx.beginPath();
-                ctx.moveTo(pos.x, pos.y);
-                ctx.lineTo(pos.x + vx, pos.y + vy);
-                ctx.strokeStyle = ball.color;
-                ctx.lineWidth = 4;
-                ctx.stroke();
-
-                let headLen = 10;
-                let angle = Math.atan2(vy, vx);
-                ctx.beginPath();
-                ctx.moveTo(pos.x + vx, pos.y + vy);
-                ctx.lineTo(pos.x + vx - headLen * Math.cos(angle - Math.PI/6), pos.y + vy - headLen * Math.sin(angle - Math.PI/6));
-                ctx.lineTo(pos.x + vx - headLen * Math.cos(angle + Math.PI/6), pos.y + vy - headLen * Math.sin(angle + Math.PI/6));
-                ctx.lineTo(pos.x + vx, pos.y + vy);
-                ctx.fillStyle = ball.color;
-                ctx.fill();
-
-                // 速度のテキスト
-                ctx.fillStyle = ball.color;
-                if (isHoriz) {
-                    ctx.textAlign = p.v > 0 ? 'left' : 'right';
-                    let vTextY = isPrimary ? pos.y - 10 : pos.y + 10;
-                    ctx.fillText(`v=${p.v.toFixed(1)} [m/s]`, pos.x + vx + (p.v > 0 ? 5 : -5), vTextY);
-                } else {
-                    ctx.textAlign = isPrimary ? 'right' : 'left';
-                    let vTextX = pos.x + (isPrimary ? -15 : 15);
-                    ctx.fillText(`v=${p.v.toFixed(1)} [m/s]`, vTextX, pos.y + vy + (p.v > 0 ? 5 : -5));
-                }
-            } else {
-                 ctx.fillStyle = ball.color;
-                 if (isHoriz) {
-                     ctx.textAlign = 'center'; 
-                     let vTextY = isPrimary ? pos.y - 65 : pos.y + 65; 
-                     ctx.fillText(`v=0.0 [m/s]`, pos.x, vTextY); 
-                 } else {
-                     ctx.textAlign = textAlignStr; 
-                     let vTextX = pos.x + (isPrimary ? -25 : 25);
-                     ctx.fillText(`v=0.0 [m/s]`, vTextX, pos.y);
-                 }
-            }
+            // x, v, a を各グラフのテーマカラーで描画
+            drawTextWithOutline(`x=${p.x.toFixed(1)} [m]`, textX, textY_x, COLOR_X);
+            drawTextWithOutline(`v=${p.v.toFixed(1)} [m/s]`, textX, textY_v, COLOR_V);
+            drawTextWithOutline(`a=${p.a.toFixed(1)} [m/s²]`, textX, textY_a, COLOR_A);
         };
 
         // Bの球はAの球と被らないようにオフセットをつける
-        let offsetA = isHoriz ? -30 : -25;
-        let offsetB = isHoriz ? 30 : 25;
+        let offsetA = isHoriz ? -35 : -35;
+        let offsetB = isHoriz ? 35 : 35;
         if (!balls.B.enabled) offsetA = 0; 
 
         drawObj(balls.A, offsetA);
@@ -604,7 +553,6 @@
             }
         });
 
-        // グラフタイトルを「変位」に変更
         chartInstances.X = new Chart(document.getElementById('chartX'), config('x-t グラフ (変位)', '変位 [m]'));
         chartInstances.V = new Chart(document.getElementById('chartV'), config('v-t グラフ (速度)', '速度 [m/s]'));
         chartInstances.A = new Chart(document.getElementById('chartA'), config('a-t グラフ (加速度)', '加速度 [m/s²]'));
@@ -622,7 +570,6 @@
             if (min >= 0) {
                 pMin = 0;
             }
-            // (プラスの値が出ない場合は、一番上を必ず0にする)
             if (max <= 0) {
                 pMax = 0;
             }
@@ -692,16 +639,27 @@
         if (time >= MAX_TIME) {
             time = MAX_TIME;
             isRunning = false;
-            document.getElementById('startBtn').innerText = '完了';
-            document.getElementById('startBtn').style.background = '#6c757d';
+            
+            // 完了時のUI自動解除とボタンテキストの変更
+            const btn = document.getElementById('startBtn');
+            btn.innerText = '再スタート';
+            btn.style.background = 'var(--primary)';
+            
+            document.getElementById('directionSel').disabled = false;
+            document.querySelectorAll('.ball-settings input').forEach(el => el.disabled = false);
+
+            document.getElementById('timeVal').innerText = time.toFixed(2);
+            drawCanvas(time);
+            pushChartData(MAX_TIME);
+            renderCharts();
+            return;
         }
 
         document.getElementById('timeVal').innerText = time.toFixed(2);
         drawCanvas(time);
         
-        if (time - lastChartPushTime >= 0.1 || time === MAX_TIME) {
+        if (time - lastChartPushTime >= 0.1) {
             let pushTime = Math.round((lastChartPushTime + 0.1) * 10) / 10;
-            if(time === MAX_TIME) pushTime = MAX_TIME;
             pushChartData(pushTime);
             lastChartPushTime = pushTime;
             renderCharts();
@@ -711,7 +669,13 @@
     }
 
     function toggleSim() {
-        if (time >= MAX_TIME) return;
+        // 完了後に再スタートする場合の初期化
+        if (time >= MAX_TIME) {
+            time = 0;
+            updateAll();
+            for(let key in chartData) chartData[key] = [];
+            lastChartPushTime = -0.1;
+        }
 
         const btn = document.getElementById('startBtn');
         if (isRunning) {
