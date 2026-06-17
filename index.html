@@ -329,6 +329,10 @@
     const COLOR_V = '#fd7e14';
     const COLOR_A = '#6f42c1';
 
+    // 描画負荷軽減のためのキャッシュ
+    let currentBounds = { x: [0, 10], v: [0, 10], a: [0, 10] };
+    let currentTickVal = 1;
+
     const modeSettings = {
         horizontal: {
             A: { enabled: true, x0: 0, v0: 5, a: 0 },
@@ -610,10 +614,12 @@
         }
     }
 
+    // 描画範囲などを計算し、キャッシュに保存する（負荷軽減）
     function updateAll() {
         resizeCanvas(); 
-        const bounds = calcBoundsAndScale();
-        updateChartBounds(bounds);
+        currentBounds = calcBoundsAndScale();
+        currentTickVal = calcTickInterval();
+        updateChartBounds(currentBounds);
         if(!isRunning) drawCanvas(time);
     }
 
@@ -648,8 +654,10 @@
         const canvasDim = isHoriz ? canvas.width : canvas.height;
         const posName = isHoriz ? 'x' : 'y';
         
-        const tickVal = calcTickInterval();
-        const bounds = calcBoundsAndScale(); 
+        // 毎回計算せずにキャッシュを使用する
+        const tickVal = currentTickVal;
+        const bounds = currentBounds; 
+        
         let minVal = Math.floor(bounds.x[0] / tickVal) * tickVal - tickVal;
         let maxVal = Math.ceil(bounds.x[1] / tickVal) * tickVal + tickVal;
 
