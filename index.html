@@ -27,46 +27,78 @@
             flex-direction: column;
         }
         
+        /* ヘッダー領域 (タイトル + コントロール) */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap; /* 画面が狭いときは折り返す */
+            margin-bottom: 10px;
+            gap: 10px;
+        }
         .page-title {
-            text-align: center;
-            margin: 0 0 15px 0;
-            font-size: 1.5rem;
+            margin: 0;
+            font-size: 1.4rem;
             color: #333;
+            flex: 1 1 auto;
+        }
+        .main-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: nowrap;
         }
 
-        /* トップコントロール (1行で収まるように調整) */
-        .top-bar { 
-            display: flex; flex-wrap: nowrap; align-items: center; justify-content: space-between; gap: 8px;
-            background: #fff; padding: 8px 12px; border-radius: 8px; 
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05); 
-            flex-shrink: 0; margin-bottom: 10px;
-            overflow-x: auto; /* 画面幅が足りない場合は横スクロール可能に */
+        /* 設定パネル */
+        .settings-panel {
+            background: #fff;
+            padding: 10px 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            margin-bottom: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
         }
-        .controls-left { display: flex; flex-wrap: nowrap; gap: 8px; align-items: center; }
-        select { padding: 4px 8px; border-radius: 4px; border: 1px solid #ccc; font-size: 0.95rem; }
+        .settings-row {
+            display: flex;
+            flex-wrap: wrap; /* 画面幅に応じて折り返し */
+            align-items: center;
+            gap: 10px;
+        }
+
+        select { padding: 6px 10px; border-radius: 4px; border: 1px solid #ccc; font-size: 1rem; cursor: pointer; }
         
         /* パラメータ入力欄 */
-        .ball-settings { display: flex; align-items: center; gap: 6px; padding: 4px 8px; border-radius: 6px; font-size: 1rem; flex-wrap: nowrap; }
+        .ball-settings { 
+            display: flex; 
+            align-items: center; 
+            gap: 8px; 
+            padding: 6px 10px; 
+            border-radius: 6px; 
+            font-size: 1rem; 
+            flex-wrap: wrap; /* iPad縦向きなどで改行を許容 */
+        }
         .panel-a { background: rgba(0, 0, 0, 0.05); border: 1px solid rgba(0, 0, 0, 0.3); }
         .panel-b { background: rgba(0, 122, 255, 0.08); border: 1px solid rgba(0, 122, 255, 0.3); }
         .ball-label { font-weight: bold; margin-right: 2px; white-space: nowrap; }
         .ja-label { font-size: 0.85rem; color: #555; margin-right: 2px; white-space: nowrap; }
         .ball-settings label { display: flex; align-items: center; gap: 2px; font-weight: bold; white-space: nowrap; }
         .ball-settings input[type="number"] { 
-            width: 65px; 
+            width: 60px; 
             text-align: right; 
-            padding: 2px 4px; 
+            padding: 4px; 
             border: 1px solid #ccc; 
             border-radius: 4px; 
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             font-family: monospace;
             font-weight: bold;
         }
         .ball-settings input:disabled { background-color: #eee; color: #777; }
         
         .g-btn {
-            padding: 2px 6px;
-            font-size: 0.8rem;
+            padding: 4px 8px;
+            font-size: 0.85rem;
             font-weight: bold;
             background: #e9ecef;
             border: 1px solid #ccc;
@@ -87,12 +119,29 @@
             -moz-appearance: textfield; 
         }
 
-        button { padding: 6px 16px; border: none; border-radius: 4px; font-weight: bold; font-size: 0.95rem; cursor: pointer; transition: background 0.2s; white-space: nowrap; }
+        button.btn-start, button.btn-reset { 
+            padding: 8px 16px; 
+            border: none; 
+            border-radius: 4px; 
+            font-weight: bold; 
+            font-size: 1rem; 
+            cursor: pointer; 
+            transition: background 0.2s; 
+            white-space: nowrap; 
+        }
         .btn-start { background: var(--primary); color: #fff; }
         .btn-start:hover { background: #0056b3; }
         .btn-reset { background: #6c757d; color: #fff; }
         .btn-reset:hover { background: #5a6268; }
-        .timer-display { font-size: 1.3rem; font-family: monospace; font-weight: bold; background: #e9ecef; padding: 4px 12px; border-radius: 4px; white-space: nowrap; margin-left: auto; }
+        .timer-display { 
+            font-size: 1.4rem; 
+            font-family: monospace; 
+            font-weight: bold; 
+            background: #e9ecef; 
+            padding: 6px 12px; 
+            border-radius: 4px; 
+            white-space: nowrap; 
+        }
 
         /* メインレイアウト */
         .main-area { 
@@ -113,7 +162,7 @@
         
         /* 鉛直レイアウト */
         .layout-vertical { 
-            grid-template-columns: 300px 1fr 1fr 1fr 1fr; 
+            grid-template-columns: 350px 1fr 1fr 1fr 1fr; 
             grid-template-rows: auto auto; 
         }
         .layout-vertical .canvas-section { grid-column: 1; grid-row: 1 / span 2; min-height: 500px; }
@@ -157,7 +206,7 @@
             font-weight: bold;
             margin-bottom: 5px;
             color: #333;
-            position: relative; /* 表示切替チェックボックス用 */
+            position: relative; 
         }
 
         .toggle-graph {
@@ -190,22 +239,31 @@
 <body>
 
 <div class="container">
-    <h1 class="page-title">等加速度直線運動と変位，速度，加速度の時間変化グラフ</h1>
+    
+    <div class="header">
+        <h1 class="page-title">等加速度直線運動と変位，速度，加速度の時間変化</h1>
+        <div class="main-controls">
+            <button class="btn-start" id="startBtn" onclick="toggleSim()">スタート</button>
+            <button class="btn-reset" onclick="resetSim()">リセット</button>
+            <div class="timer-display">t = <span id="timeVal">0.00</span> s</div>
+        </div>
+    </div>
 
-    <div class="top-bar">
-        <div class="controls-left">
+    <div class="settings-panel">
+        <div class="settings-row">
             <select id="directionSel" onchange="onDirectionChange()">
                 <option value="horizontal">水平方向の運動</option>
                 <option value="vertical_down">鉛直方向 (下向き正)</option>
                 <option value="vertical_up">鉛直方向 (上向き正)</option>
             </select>
-
+        </div>
+        <div class="settings-row">
             <div class="ball-settings panel-a">
                 <span class="ball-label" style="color:#111111;">小球A(黒)</span>
                 <label><span class="ja-label">初期位置</span><span id="labelX0A">x₀</span>=<input type="number" id="inpX0A" value="0" step="1" oninput="onInputChange()" onfocus="this.select()"></label>
                 <label><span class="ja-label">初速度</span>v₀=<input type="number" id="inpV0A" value="5" step="1" oninput="onInputChange()" onfocus="this.select()"></label>
                 <label><span class="ja-label">加速度</span>a=<input type="number" id="inpAA" value="0" step="0.1" oninput="onInputChange()" onfocus="this.select()">
-                    <button class="g-btn" type="button" id="btnGA" onclick="setGravity('A')" style="display:none;" title="重力加速度をセット">g</button>
+                    <button class="g-btn" type="button" id="btnGA" onclick="setGravity('A')" style="display:none;" title="重力加速度をセット">重力</button>
                 </label>
             </div>
             
@@ -216,15 +274,10 @@
                 <label><span class="ja-label">初期位置</span><span id="labelX0B">x₀</span>=<input type="number" id="inpX0B" value="0" step="1" oninput="onInputChange()" onfocus="this.select()"></label>
                 <label><span class="ja-label">初速度</span>v₀=<input type="number" id="inpV0B" value="5" step="1" oninput="onInputChange()" onfocus="this.select()"></label>
                 <label><span class="ja-label">加速度</span>a=<input type="number" id="inpAB" value="0" step="0.1" oninput="onInputChange()" onfocus="this.select()">
-                    <button class="g-btn" type="button" id="btnGB" onclick="setGravity('B')" style="display:none;" title="重力加速度をセット">g</button>
+                    <button class="g-btn" type="button" id="btnGB" onclick="setGravity('B')" style="display:none;" title="重力加速度をセット">重力</button>
                 </label>
             </div>
-
-            <button class="btn-start" id="startBtn" onclick="toggleSim()">スタート</button>
-            <button class="btn-reset" onclick="resetSim()">リセット</button>
         </div>
-
-        <div class="timer-display">t = <span id="timeVal">0.00</span> s</div>
     </div>
 
     <div id="mainArea" class="main-area layout-horizontal">
