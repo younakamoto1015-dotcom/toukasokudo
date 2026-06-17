@@ -190,7 +190,7 @@
 <body>
 
 <div class="container">
-    <h1 class="page-title">等加速度直線運動と変位，速度，加速度の時間変化</h1>
+    <h1 class="page-title">等加速度直線運動と変位，速度，加速度の時間変化グラフ</h1>
 
     <div class="top-bar">
         <div class="controls-left">
@@ -359,14 +359,9 @@
     }
 
     function updateGraphVisibility() {
-        const showX = document.getElementById('chkShowX').checked;
-        const showV = document.getElementById('chkShowV').checked;
-        const showA = document.getElementById('chkShowA').checked;
-
-        // chart-box 全体を消すのではなく、中の canvas のラッパーの visibility を変更して枠を残す
-        document.querySelector('.box-x .chart-wrapper').style.visibility = showX ? 'visible' : 'hidden';
-        document.querySelector('.box-v .chart-wrapper').style.visibility = showV ? 'visible' : 'hidden';
-        document.querySelector('.box-a .chart-wrapper').style.visibility = showA ? 'visible' : 'hidden';
+        if (chartInstances.X && chartInstances.V && chartInstances.A) {
+            renderCharts();
+        }
     }
 
     function updateUIFromState() {
@@ -878,29 +873,36 @@
     }
 
     function renderCharts() {
-        const makeDataset = (ballKey, dataKey) => ({
+        const showX = document.getElementById('chkShowX').checked;
+        const showV = document.getElementById('chkShowV').checked;
+        const showA = document.getElementById('chkShowA').checked;
+
+        const makeDataset = (ballKey, dataKey, isHidden) => ({
             label: balls[ballKey].name,
             data: chartData[ballKey+dataKey],
             borderColor: balls[ballKey].color,
             backgroundColor: balls[ballKey].color,
-            borderWidth: 2, fill: false
+            borderWidth: 2, fill: false,
+            hidden: isHidden
         });
 
-        const datasetsX = [makeDataset('A', 'x')];
-        const datasetsV = [makeDataset('A', 'v')];
-        const datasetsA = [makeDataset('A', 'a')];
+        const datasetsX = [makeDataset('A', 'x', !showX)];
+        const datasetsV = [makeDataset('A', 'v', !showV)];
+        const datasetsA = [makeDataset('A', 'a', !showA)];
 
         if (balls.B.enabled) {
-            datasetsX.push(makeDataset('B', 'x'));
-            datasetsV.push(makeDataset('B', 'v'));
-            datasetsA.push(makeDataset('B', 'a'));
+            datasetsX.push(makeDataset('B', 'x', !showX));
+            datasetsV.push(makeDataset('B', 'v', !showV));
+            datasetsA.push(makeDataset('B', 'a', !showA));
         }
 
-        chartInstances.X.data.datasets = datasetsX;
-        chartInstances.V.data.datasets = datasetsV;
-        chartInstances.A.data.datasets = datasetsA;
+        if (chartInstances.X) {
+            chartInstances.X.data.datasets = datasetsX;
+            chartInstances.V.data.datasets = datasetsV;
+            chartInstances.A.data.datasets = datasetsA;
 
-        Object.values(chartInstances).forEach(c => c.update('none'));
+            Object.values(chartInstances).forEach(c => c.update('none'));
+        }
     }
 
     // --- メインループ ---
