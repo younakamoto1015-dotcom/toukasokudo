@@ -23,12 +23,19 @@
             padding: 10px; 
             background-color: var(--bg); 
             color: var(--text); 
-            min-height: 100vh; /* スクロールを許可するため制限を解除 */
+            min-height: 100vh;
             box-sizing: border-box;
             display: flex;
             flex-direction: column;
         }
         
+        .page-title {
+            text-align: center;
+            margin: 0 0 15px 0;
+            font-size: 1.5rem;
+            color: #333;
+        }
+
         /* トップコントロール */
         .top-bar { 
             display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px;
@@ -57,15 +64,14 @@
         /* メインレイアウト (Gridで完全制御) */
         .main-area { 
             display: grid; 
-            gap: 12px; 
+            gap: 15px; 
             padding-bottom: 20px;
         }
         
         /* 水平レイアウト：Canvas上、グラフ3つ下（1列に3つ） */
         .layout-horizontal { 
             grid-template-columns: repeat(3, 1fr);
-            /* 縦方向の大きさをウィンドウの高さ（vh）に依存させる */
-            grid-template-rows: 55vh 75vh; 
+            grid-template-rows: 300px auto; 
         }
         .layout-horizontal .canvas-section { grid-column: 1 / span 3; grid-row: 1; }
         .layout-horizontal .box-x { grid-column: 1; grid-row: 2; }
@@ -74,15 +80,13 @@
         
         /* 鉛直レイアウト：Canvas左、グラフは右側に正確な逆ピラミッド型に配置 */
         .layout-vertical { 
-            /* 左のキャンバス幅をウィンドウ幅の25%（vw）に、残りエリアを均等な4列に分割 */
-            grid-template-columns: 25vw 1fr 1fr 1fr 1fr; 
-            /* 縦方向の大きさをウィンドウの高さ（vh）に依存させる */
-            grid-template-rows: 65vh 65vh; 
+            grid-template-columns: 350px 1fr 1fr 1fr 1fr; 
+            grid-template-rows: auto auto; 
         }
-        .layout-vertical .canvas-section { grid-column: 1; grid-row: 1 / span 2; }
-        .layout-vertical .box-x { grid-column: 2 / span 2; grid-row: 1; } /* 4列中、左の2列分 */
-        .layout-vertical .box-v { grid-column: 4 / span 2; grid-row: 1; } /* 4列中、右の2列分 */
-        .layout-vertical .box-a { grid-column: 3 / span 2; grid-row: 2; } /* 4列中、中央の2列分。これで3つとも完全に同じ大きさの逆ピラミッドになる */
+        .layout-vertical .canvas-section { grid-column: 1; grid-row: 1 / span 2; min-height: 600px; }
+        .layout-vertical .box-x { grid-column: 2 / span 2; grid-row: 1; } 
+        .layout-vertical .box-v { grid-column: 4 / span 2; grid-row: 1; } 
+        .layout-vertical .box-a { grid-column: 3 / span 2; grid-row: 2; } 
 
         .canvas-section { 
             position: relative; 
@@ -94,10 +98,9 @@
             border: 1px solid #ddd; 
             min-height: 0; 
             min-width: 0; 
-            overflow: hidden; /* コンテナ膨張バグを防ぐ最重要プロパティ */
+            overflow: hidden; 
         }
         
-        /* canvasが親要素を押し広げないよう絶対配置にする */
         #simCanvas { 
             position: absolute; 
             top: 0; left: 0;
@@ -111,6 +114,8 @@
             background: #fff; border-radius: 8px; padding: 10px; 
             box-shadow: 0 1px 4px rgba(0,0,0,0.1); 
             display: flex; flex-direction: column; min-height: 0; min-width: 0;
+            aspect-ratio: 1 / 1; /* グラフを正方形に */
+            width: 100%;
         }
         
         .chart-wrapper {
@@ -130,6 +135,8 @@
 <body>
 
 <div class="container">
+    <h1 class="page-title">等加速度直線運動と変位，速度，加速度の時間変化</h1>
+
     <div class="top-bar">
         <div class="controls-left">
             <select id="directionSel" onchange="onDirectionChange()">
@@ -178,13 +185,12 @@
     let time = 0;
     let lastTimestamp = 0;
     let reqAnimFrameId = null;
-    let drawScale = 1; // px per meter
-    let originOffset = 0; // キャンバス端からの原点位置(ピクセル)
+    let drawScale = 1; 
+    let originOffset = 0; 
     let lastChartPushTime = -0.1; 
 
     let currentMode = 'horizontal';
 
-    // 3つのモードそれぞれの設定を独立して記憶する
     const modeSettings = {
         horizontal: {
             A: { enabled: true, x0: 0, v0: 5, a: 0 },
@@ -200,23 +206,16 @@
         }
     };
 
-    // 実際のシミュレーションで使われる現在の物体データ
     let balls = {
         A: { color: 'var(--ball-A)', name: '小球A (黒)', ...modeSettings.horizontal.A },
         B: { color: 'var(--ball-B)', name: '小球B (青)', ...modeSettings.horizontal.B }
     };
 
-    // グラフデータ履歴
     let chartData = { time: [], Ax:[], Av:[], Aa:[], Bx:[], Bv:[], Ba:[] };
     let chartInstances = {};
 
-    // DOM要素
     const canvas = document.getElementById('simCanvas');
     const ctx = canvas.getContext('2d');
-
-    const COLOR_X = '#28a745';
-    const COLOR_V = '#fd7e14';
-    const COLOR_A = '#6f42c1';
 
     // --- 初期化処理 ---
     function init() {
@@ -224,12 +223,10 @@
         window.addEventListener('resize', () => { updateAll(); });
         initCharts();
         
-        // 初期状態UIセット
         updateUIFromState();
         updateAll();
     }
 
-    // UIに現在のballsのデータを反映
     function updateUIFromState() {
         document.getElementById('inpX0A').value = balls.A.x0;
         document.getElementById('inpV0A').value = balls.A.v0;
@@ -241,23 +238,18 @@
         document.getElementById('inpAB').value = balls.B.a;
     }
 
-    // 方向選択時の処理（独立した設定の切り替え）
     function onDirectionChange() {
         const newMode = document.getElementById('directionSel').value;
         const mainArea = document.getElementById('mainArea');
         
-        // 現在のモードの設定を保存する
         modeSettings[currentMode].A = { enabled: balls.A.enabled, x0: balls.A.x0, v0: balls.A.v0, a: balls.A.a };
         modeSettings[currentMode].B = { enabled: balls.B.enabled, x0: balls.B.x0, v0: balls.B.v0, a: balls.B.a };
 
-        // 新しいモードに切り替え
         currentMode = newMode;
 
-        // 新しいモードの設定を読み込む
         Object.assign(balls.A, modeSettings[currentMode].A);
         Object.assign(balls.B, modeSettings[currentMode].B);
 
-        // レイアウトクラスの切り替え
         if (currentMode === 'horizontal') {
             mainArea.className = 'main-area layout-horizontal';
         } else {
@@ -266,14 +258,12 @@
         
         updateUIFromState();
         
-        // レイアウト変更完了後にCanvas解像度とChartサイズを強制リフレッシュする
         setTimeout(() => {
             updateAll();
             Object.values(chartInstances).forEach(c => c.resize());
         }, 50); 
     }
 
-    // パラメータ入力時の処理
     function onInputChange() {
         balls.A.x0 = parseFloat(document.getElementById('inpX0A').value) || 0;
         balls.A.v0 = parseFloat(document.getElementById('inpV0A').value) || 0;
@@ -284,7 +274,6 @@
         balls.B.v0 = parseFloat(document.getElementById('inpV0B').value) || 0;
         balls.B.a  = parseFloat(document.getElementById('inpAB').value) || 0;
 
-        // 入力した時点ですぐに保存用オブジェクトにも反映させておく
         modeSettings[currentMode].A = { enabled: balls.A.enabled, x0: balls.A.x0, v0: balls.A.v0, a: balls.A.a };
         modeSettings[currentMode].B = { enabled: balls.B.enabled, x0: balls.B.x0, v0: balls.B.v0, a: balls.B.a };
 
@@ -352,7 +341,6 @@
         return { x: [minX, maxX], v: [minV, maxV], a: [minA, maxA] };
     }
 
-    // 実座標から画面座標への変換
     function getScreenPos(val, offset) {
         const cx = canvas.width / 2;
         const cy = canvas.height / 2;
@@ -376,7 +364,7 @@
     // --- 描画処理 (Canvas) ---
     function resizeCanvas() {
         const wrap = document.getElementById('canvasWrap');
-        if (wrap.clientWidth === 0 || wrap.clientHeight === 0) return; // 非表示時のエラー防止
+        if (wrap.clientWidth === 0 || wrap.clientHeight === 0) return;
         if (canvas.width !== wrap.clientWidth || canvas.height !== wrap.clientHeight) {
             canvas.width = wrap.clientWidth;
             canvas.height = wrap.clientHeight;
@@ -487,31 +475,43 @@
 
             ctx.font = 'bold 16px sans-serif';
 
+            // 被りを防ぐためにAとBでテキストの配置位置を明確に分ける
+            let isPrimary = offset <= 0; // Aは上(左)側、Bは下(右)側
             let textX_pos, textY_pos, textX_acc, textY_acc, textAlignStr;
-            let isLeft = offset <= 0;
 
             if (isHoriz) {
-                textX_pos = pos.x; textY_pos = pos.y - 25;
-                textX_acc = pos.x; textY_acc = pos.y + 35;
+                textX_pos = pos.x; 
+                textX_acc = pos.x;
+                if (isPrimary) {
+                    textY_pos = pos.y - 25; // Aは上
+                    textY_acc = pos.y - 45;
+                } else {
+                    textY_pos = pos.y + 25; // Bは下
+                    textY_acc = pos.y + 45;
+                }
                 textAlignStr = 'center';
             } else {
-                textX_pos = pos.x + (isLeft ? -25 : 25);
-                textX_acc = pos.x + (isLeft ? -25 : 25);
+                if (isPrimary) {
+                    textX_pos = pos.x - 20; // Aは左
+                    textX_acc = pos.x - 20;
+                    textAlignStr = 'right';
+                } else {
+                    textX_pos = pos.x + 20; // Bは右
+                    textX_acc = pos.x + 20;
+                    textAlignStr = 'left';
+                }
                 textY_pos = pos.y - 15;
                 textY_acc = pos.y + 15;
-                textAlignStr = isLeft ? 'right' : 'left';
             }
             
             ctx.textAlign = textAlignStr;
             
-            // x (位置)
-            ctx.fillStyle = COLOR_X;
+            // x (変位), a (加速度) をそれぞれの小球のカラーで表示
+            ctx.fillStyle = ball.color;
             ctx.fillText(`x=${p.x.toFixed(1)} [m]`, textX_pos, textY_pos);
-            // a (加速度)
-            ctx.fillStyle = COLOR_A;
             ctx.fillText(`a=${p.a.toFixed(1)} [m/s²]`, textX_acc, textY_acc);
 
-            // 速度ベクトル
+            // 速度ベクトル（小球と同じ色で表示）
             if (Math.abs(p.v) > 0.05) {
                 let vLen = Math.max(30, Math.min(Math.abs(p.v) * 6, 80)); 
                 let vx = 0, vy = 0;
@@ -527,7 +527,7 @@
                 ctx.beginPath();
                 ctx.moveTo(pos.x, pos.y);
                 ctx.lineTo(pos.x + vx, pos.y + vy);
-                ctx.strokeStyle = COLOR_V;
+                ctx.strokeStyle = ball.color;
                 ctx.lineWidth = 4;
                 ctx.stroke();
 
@@ -538,29 +538,35 @@
                 ctx.lineTo(pos.x + vx - headLen * Math.cos(angle - Math.PI/6), pos.y + vy - headLen * Math.sin(angle - Math.PI/6));
                 ctx.lineTo(pos.x + vx - headLen * Math.cos(angle + Math.PI/6), pos.y + vy - headLen * Math.sin(angle + Math.PI/6));
                 ctx.lineTo(pos.x + vx, pos.y + vy);
-                ctx.fillStyle = COLOR_V;
+                ctx.fillStyle = ball.color;
                 ctx.fill();
 
-                ctx.fillStyle = COLOR_V;
+                // 速度のテキスト
+                ctx.fillStyle = ball.color;
                 if (isHoriz) {
                     ctx.textAlign = p.v > 0 ? 'left' : 'right';
-                    ctx.fillText(`v=${p.v.toFixed(1)} [m/s]`, pos.x + vx + (p.v > 0 ? 5 : -5), pos.y - 10);
+                    let vTextY = isPrimary ? pos.y - 10 : pos.y + 10;
+                    ctx.fillText(`v=${p.v.toFixed(1)} [m/s]`, pos.x + vx + (p.v > 0 ? 5 : -5), vTextY);
                 } else {
-                    ctx.textAlign = isLeft ? 'right' : 'left';
-                    ctx.fillText(`v=${p.v.toFixed(1)} [m/s]`, pos.x + (isLeft ? -15 : 15), pos.y + vy + (p.v > 0 ? 0 : 15));
+                    ctx.textAlign = isPrimary ? 'right' : 'left';
+                    let vTextX = pos.x + (isPrimary ? -15 : 15);
+                    ctx.fillText(`v=${p.v.toFixed(1)} [m/s]`, vTextX, pos.y + vy + (p.v > 0 ? 5 : -5));
                 }
             } else {
-                 ctx.fillStyle = COLOR_V;
+                 ctx.fillStyle = ball.color;
                  if (isHoriz) {
                      ctx.textAlign = 'center'; 
-                     ctx.fillText(`v=0.0 [m/s]`, pos.x, pos.y - 45); 
+                     let vTextY = isPrimary ? pos.y - 65 : pos.y + 65; 
+                     ctx.fillText(`v=0.0 [m/s]`, pos.x, vTextY); 
                  } else {
                      ctx.textAlign = textAlignStr; 
-                     ctx.fillText(`v=0.0 [m/s]`, pos.x + (isLeft ? -25 : 25), pos.y);
+                     let vTextX = pos.x + (isPrimary ? -25 : 25);
+                     ctx.fillText(`v=0.0 [m/s]`, vTextX, pos.y);
                  }
             }
         };
 
+        // Bの球はAの球と被らないようにオフセットをつける
         let offsetA = isHoriz ? -30 : -25;
         let offsetB = isHoriz ? 30 : 25;
         if (!balls.B.enabled) offsetA = 0; 
@@ -598,7 +604,8 @@
             }
         });
 
-        chartInstances.X = new Chart(document.getElementById('chartX'), config('x-t グラフ (位置)', '位置 [m]'));
+        // グラフタイトルを「変位」に変更
+        chartInstances.X = new Chart(document.getElementById('chartX'), config('x-t グラフ (変位)', '変位 [m]'));
         chartInstances.V = new Chart(document.getElementById('chartV'), config('v-t グラフ (速度)', '速度 [m/s]'));
         chartInstances.A = new Chart(document.getElementById('chartA'), config('a-t グラフ (加速度)', '加速度 [m/s²]'));
     }
@@ -608,7 +615,19 @@
             let [min, max] = arr;
             let rng = max - min;
             if (rng === 0) rng = 10;
-            return { min: min - rng*0.1, max: max + rng*0.1 };
+            let pMin = min - rng*0.1;
+            let pMax = max + rng*0.1;
+            
+            // マイナスの値が出ない場合は、一番下(最小値)を必ず0にする
+            if (min >= 0) {
+                pMin = 0;
+            }
+            // (プラスの値が出ない場合は、一番上を必ず0にする)
+            if (max <= 0) {
+                pMax = 0;
+            }
+
+            return { min: pMin, max: pMax };
         };
         const bx = pad(bounds.x), bv = pad(bounds.v), ba = pad(bounds.a);
 
