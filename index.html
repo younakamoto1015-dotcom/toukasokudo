@@ -853,18 +853,16 @@
                         min: 0, 
                         max: MAX_TIME, 
                         title: { display: true, text: 't [s]' },
-                        border: { color: '#333', width: 2 }, // 枠の軸線を太くする
+                        border: { color: '#ccc', width: 1 }, 
                         grid: {
-                            // 値が0のラインだけ太く、色を濃くする
                             color: (context) => context.tick && context.tick.value === 0 ? '#333' : '#dee2e6',
                             lineWidth: (context) => context.tick && context.tick.value === 0 ? 2 : 1
                         }
                     },
                     y: { 
                         title: { display: true, text: yLabel },
-                        border: { color: '#333', width: 2 }, // 枠の軸線を太くする
+                        border: { color: '#ccc', width: 1 }, 
                         grid: {
-                            // 値が0のラインだけ太く、色を濃くする
                             color: (context) => context.tick && context.tick.value === 0 ? '#333' : '#dee2e6',
                             lineWidth: (context) => context.tick && context.tick.value === 0 ? 2 : 1
                         }
